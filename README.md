@@ -42,7 +42,11 @@ Content-Encoding: br
 PS C:\Users\Administrator\Desktop\nginx-course\curl-8.7.1_7-win64-mingw\bin>
 ```
 
-## 开发日志
+## 如何给 Docker Nginx 官方镜像添加 Brotli 动态模块
+
+Brotli 是一种流行的压缩算法，通常用于 Web 服务器来减少发送给客户端的数据量，从而提高加载速度和效率。
+
+以下是在 Docker 中为 Nginx 添加 Brotli 动态模块的步骤：
 
 ### 编写 Dockerfile 编译 brotli 模块
 
