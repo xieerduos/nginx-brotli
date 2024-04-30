@@ -2,7 +2,7 @@
 
 https://hub.docker.com/r/lishaohai/nginx-brotli
 
-## 运行镜像
+## 运行容器
 
 ```bash
 docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.25.4
