@@ -2,10 +2,18 @@
 
 https://hub.docker.com/r/lishaohai/nginx-brotli
 
+## 当前版本
+
+- NGINX: `1.31.1`
+- Docker tags: `lishaohai/nginx-brotli:1.31.1`, `lishaohai/nginx-brotli:1.31`
+- Platforms: `linux/amd64`, `linux/arm64`
+
+旧版本 tag 不会被覆盖，例如 `lishaohai/nginx-brotli:1.25.4` 仍可继续使用。
+
 ## 运行容器
 
 ```bash
-docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.25.4
+docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.31.1
 ```
 
 ## 使用 curl 测试
@@ -31,7 +39,7 @@ Features: alt-svc AsynchDNS brotli HSTS HTTP2 HTTP3 HTTPS-proxy IDN IPv6 Kerbero
 ```powershell
 PS C:\Users\Administrator\Desktop\nginx-course\curl-8.7.1_7-win64-mingw\bin>  .\curl.exe -I -H "Accept-Encoding: br" http://localhost:8888
 HTTP/1.1 200 OK
-Server: nginx/1.25.4
+Server: nginx/1.31.1
 Date: Tue, 30 Apr 2024 16:31:55 GMT
 Content-Type: text/html
 Last-Modified: Wed, 14 Feb 2024 16:03:00 GMT
@@ -54,16 +62,16 @@ Dockerfile 文件内容如下，是根据 https://github.com/google/ngx_brotli �
 
 ```dockerfile
 # 使用 Nginx 官方镜像作为基础镜像
-FROM nginx:1.25.4
+FROM nginx:1.31.1
 
 # 安装必要的构建工具和库
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpcre3-dev \
+    ca-certificates \
+    libpcre2-dev \
     zlib1g-dev \
     libssl-dev \
-    wget \
+    curl \
     git \
     cmake \
     autoconf \
@@ -81,9 +89,9 @@ RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli /usr
     && make install
 
 # 下载并准备 Nginx 源码
-RUN wget https://nginx.org/download/nginx-1.25.4.tar.gz -O /tmp/nginx.tar.gz \
+RUN curl -fSL "https://nginx.org/download/nginx-1.31.1.tar.gz" -o /tmp/nginx.tar.gz \
     && tar -zxvf /tmp/nginx.tar.gz -C /usr/src/ \
-    && mv /usr/src/nginx-1.25.4 /usr/src/nginx
+    && mv /usr/src/nginx-1.31.1 /usr/src/nginx
 
 # 编译 Nginx 与 Brotli 模块
 RUN cd /usr/src/nginx \
@@ -95,7 +103,7 @@ RUN cp /usr/src/nginx/objs/ngx_http_brotli_filter_module.so /usr/lib/nginx/modul
     && cp /usr/src/nginx/objs/ngx_http_brotli_static_module.so /usr/lib/nginx/modules/
 
 # 清理不必要的文件和库
-RUN apt-get remove --purge -y build-essential wget git cmake autoconf libtool \
+RUN apt-get remove --purge -y build-essential curl git cmake autoconf libtool \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /usr/src/nginx /usr/src/ngx_brotli
@@ -108,9 +116,7 @@ RUN mkdir -p /etc/nginx/modules-enabled \
 
 注意：
 
-- 1. 这里的 `FROM nginx:1.25.4` 版本要和底部的 `https://nginx.org/download/nginx-1.25.4.tar.gz` 版本要一致
-- 2. `apt-transport-https` 是解决 `apt-get update' returned a non-zero code: 100`的错误，参考地址 https://stackoverflow.com/questions/38002543/apt-get-update-returned-a-non-zero-code-100
-
+- 1. 这里的 `FROM nginx:1.31.1` 版本要和底部的 `https://nginx.org/download/nginx-1.31.1.tar.gz` 版本要一致
 ### 构建自己编译的 brotli 镜像
 
 ```bash
@@ -218,16 +224,16 @@ http {
 ```dockerfile
 
 # 使用 Nginx 官方镜像作为基础镜像
-FROM nginx:1.25.4
+FROM nginx:1.31.1
 
 # 安装必要的构建工具和库
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpcre3-dev \
+    ca-certificates \
+    libpcre2-dev \
     zlib1g-dev \
     libssl-dev \
-    wget \
+    curl \
     git \
     cmake \
     autoconf \
@@ -245,9 +251,9 @@ RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli /usr
     && make install
 
 # 下载并准备 Nginx 源码
-RUN wget https://nginx.org/download/nginx-1.25.4.tar.gz -O /tmp/nginx.tar.gz \
+RUN curl -fSL "https://nginx.org/download/nginx-1.31.1.tar.gz" -o /tmp/nginx.tar.gz \
     && tar -zxvf /tmp/nginx.tar.gz -C /usr/src/ \
-    && mv /usr/src/nginx-1.25.4 /usr/src/nginx
+    && mv /usr/src/nginx-1.31.1 /usr/src/nginx
 
 # 编译 Nginx 与 Brotli 模块
 RUN cd /usr/src/nginx \
@@ -259,7 +265,7 @@ RUN cp /usr/src/nginx/objs/ngx_http_brotli_filter_module.so /usr/lib/nginx/modul
     && cp /usr/src/nginx/objs/ngx_http_brotli_static_module.so /usr/lib/nginx/modules/
 
 # 清理不必要的文件和库
-RUN apt-get remove --purge -y build-essential wget git cmake autoconf libtool \
+RUN apt-get remove --purge -y build-essential curl git cmake autoconf libtool \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /usr/src/nginx /usr/src/ngx_brotli
@@ -344,23 +350,23 @@ docker exec -it mybrotli nginx -s reload
 修改前
 
 ```
-lishaohai/nginx-brotli                    1.25.4    e2cf292722ef   5 minutes ago   759MB
+lishaohai/nginx-brotli                    1.31.1    e2cf292722ef   5 minutes ago   759MB
 ```
 
 Dockerfile
 
 ```Dockerfile
 # 使用 Nginx 官方镜像作为基础镜像
-FROM nginx:1.25.4
+FROM nginx:1.31.1
 
 # 安装必要的构建工具和库
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpcre3-dev \
+    ca-certificates \
+    libpcre2-dev \
     zlib1g-dev \
     libssl-dev \
-    wget \
+    curl \
     git \
     cmake \
     autoconf \
@@ -378,9 +384,9 @@ RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli /usr
     && make install
 
 # 下载并准备 Nginx 源码
-RUN wget https://nginx.org/download/nginx-1.25.4.tar.gz -O /tmp/nginx.tar.gz \
+RUN curl -fSL "https://nginx.org/download/nginx-1.31.1.tar.gz" -o /tmp/nginx.tar.gz \
     && tar -zxvf /tmp/nginx.tar.gz -C /usr/src/ \
-    && mv /usr/src/nginx-1.25.4 /usr/src/nginx
+    && mv /usr/src/nginx-1.31.1 /usr/src/nginx
 
 # 编译 Nginx 与 Brotli 模块
 RUN cd /usr/src/nginx \
@@ -392,7 +398,7 @@ RUN cp /usr/src/nginx/objs/ngx_http_brotli_filter_module.so /usr/lib/nginx/modul
     && cp /usr/src/nginx/objs/ngx_http_brotli_static_module.so /usr/lib/nginx/modules/
 
 # 清理不必要的文件和库
-RUN apt-get remove --purge -y build-essential wget git cmake autoconf libtool \
+RUN apt-get remove --purge -y build-essential curl git cmake autoconf libtool \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /usr/src/nginx /usr/src/ngx_brotli
@@ -410,23 +416,23 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 修改后
 
 ```
-lishaohai/nginx-brotli                    1.25.4    e79057fe4b4e   6 seconds ago   188MB
+lishaohai/nginx-brotli                    1.31.1    e79057fe4b4e   6 seconds ago   188MB
 ```
 
 Dockerfile
 
 ```Dockerfile
 # 第一阶段：使用标准 Nginx 镜像作为基础镜像，用于构建 Brotli 模块
-FROM nginx:1.25.4 as builder
+FROM nginx:1.31.1 as builder
 
 # 安装必要的构建工具和库
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpcre3-dev \
+    ca-certificates \
+    libpcre2-dev \
     zlib1g-dev \
     libssl-dev \
-    wget \
+    curl \
     git \
     cmake \
     autoconf \
@@ -441,9 +447,9 @@ RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli /usr
     && make install
 
 # 下载并准备 Nginx 源码
-RUN wget https://nginx.org/download/nginx-1.25.4.tar.gz -O /tmp/nginx.tar.gz \
+RUN curl -fSL "https://nginx.org/download/nginx-1.31.1.tar.gz" -o /tmp/nginx.tar.gz \
     && tar -zxvf /tmp/nginx.tar.gz -C /usr/src/ \
-    && mv /usr/src/nginx-1.25.4 /usr/src/nginx
+    && mv /usr/src/nginx-1.31.1 /usr/src/nginx
 
 # 编译 Nginx 与 Brotli 模块
 RUN cd /usr/src/nginx \
@@ -451,7 +457,7 @@ RUN cd /usr/src/nginx \
     && make modules
 
 # 第二阶段：使用一个干净的 Nginx 镜像
-FROM nginx:1.25.4
+FROM nginx:1.31.1
 
 # 从 builder 阶段复制编译好的模块到适当位置
 COPY --from=builder /usr/src/nginx/objs/ngx_http_brotli_filter_module.so /usr/lib/nginx/modules/
@@ -471,13 +477,13 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 构建镜像
 
 ```bash
-docker build -t lishaohai/nginx-brotli:1.25.4 .
+docker build -t lishaohai/nginx-brotli:1.31.1 .
 ```
 
 运行容器测试
 
 ```bash
-docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.25.4
+docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.31.1
 ```
 
 http://localhost:8888
@@ -485,19 +491,19 @@ http://localhost:8888
 推送到 docker hub，你可以忽略这个一个步骤
 
 ```bash
-docker push lishaohai/nginx-brotli:1.25.4
+docker push lishaohai/nginx-brotli:1.31.1
 ```
 
 日志：
 
 ```powershell
-PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.25.4
+PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker run --name mynginx -d -p 8888:80 lishaohai/nginx-brotli:1.31.1
 9a2efe84fb4e7fc64bbc94e9d05a98c8cbf517af5f981c5afb6d56c8d0b99d32
 PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker ps -a
 CONTAINER ID   IMAGE                           COMMAND                   CREATED         STATUS        PORTS                  NAMES
-9a2efe84fb4e   lishaohai/nginx-brotli:1.25.4   "/docker-entrypoint.…"   3 seconds ago   Up 1 second   0.0.0.0:8888->80/tcp   mynginx
-PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker build -t lishaohai/nginx-brotli:1.25.4 .^C
-PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker push lishaohai/nginx-brotli:1.25.4
+9a2efe84fb4e   lishaohai/nginx-brotli:1.31.1   "/docker-entrypoint.…"   3 seconds ago   Up 1 second   0.0.0.0:8888->80/tcp   mynginx
+PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker build -t lishaohai/nginx-brotli:1.31.1 .^C
+PS C:\Users\Administrator\Desktop\nginx-course\nginx-module> docker push lishaohai/nginx-brotli:1.31.1
 The push refers to repository [docker.io/lishaohai/nginx-brotli]
 78f8f2cd8378: Pushed
 98e98ab70b63: Pushed
@@ -510,6 +516,6 @@ c4484f227d5e: Mounted from library/nginx
 2ee294939e65: Mounted from library/nginx
 87a8a3a2ab9c: Mounted from library/nginx
 1f00ff201478: Mounted from library/nginx
-1.25.4: digest: sha256:53decb3d31539cde84967a1f50cdc212f3dd8cbbdc11c6a8652a08a2334c4c72 size: 2611
+1.31.1: digest: sha256:53decb3d31539cde84967a1f50cdc212f3dd8cbbdc11c6a8652a08a2334c4c72 size: 2611
 PS C:\Users\Administrator\Desktop\nginx-course\nginx-module>
 ```
