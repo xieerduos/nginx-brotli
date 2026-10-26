@@ -2,6 +2,14 @@
 
 https://hub.docker.com/r/lishaohai/nginx-brotli
 
+## CVE-2026-111497 security release
+
+- Image: `lishaohai/nginx-brotli:1.31.1-brotli-1.2.1` (`linux/amd64`, `linux/arm64`).
+- Brotli module source: `v1.2.1` (`db24a98aed38a16de78cc05ca15cdd8dc2a0d92d`).
+- ngx_brotli source: `53e0fb55f250f48fe80c0ddbf6c0f7103cdbaae1`.
+- Debian runtime library: `libbrotli1 >= 1.1.0-2+deb13u1`; the build fails if the security update is unavailable.
+- Existing image tags are retained. Consumers must select the new security tag and recreate their containers.
+
 ## 当前版本
 
 - NGINX: `1.31.1`
