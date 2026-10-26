@@ -20,7 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 克隆 ngx_brotli 和 Brotli 源代码，编译 Brotli 库
-RUN git clone --depth=1 --recurse-submodules -j8 https://github.com/google/ngx_brotli /usr/src/ngx_brotli \
+RUN git clone --depth=1 https://github.com/google/ngx_brotli /usr/src/ngx_brotli \
+    && git -C /usr/src/ngx_brotli fetch --depth=1 origin 53e0fb55f250f48fe80c0ddbf6c0f7103cdbaae1 \
+    && git -C /usr/src/ngx_brotli checkout --detach 53e0fb55f250f48fe80c0ddbf6c0f7103cdbaae1 \
+    && git -C /usr/src/ngx_brotli submodule update --init --depth=1 \
+    && git -C /usr/src/ngx_brotli/deps/brotli fetch --depth=1 origin db24a98aed38a16de78cc05ca15cdd8dc2a0d92d \
+    && git -C /usr/src/ngx_brotli/deps/brotli checkout --detach db24a98aed38a16de78cc05ca15cdd8dc2a0d92d \
     && cd /usr/src/ngx_brotli/deps/brotli \
     && mkdir out && cd out \
     && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF .. \
@@ -43,8 +48,14 @@ FROM nginx:${NGINX_VERSION}
 ARG NGINX_VERSION
 LABEL org.opencontainers.image.title="nginx-brotli" \
       org.opencontainers.image.version="${NGINX_VERSION}" \
+      org.opencontainers.image.brotli.version="1.2.1" \
       org.opencontainers.image.source="https://github.com/xieerduos/nginx-brotli" \
       org.opencontainers.image.description="Official NGINX image with google ngx_brotli dynamic modules"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libbrotli1 \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libbrotli1)" ge 1.1.0-2+deb13u1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # 从 builder 阶段复制编译好的模块到适当位置
 COPY --from=builder /usr/src/nginx/objs/ngx_http_brotli_filter_module.so /usr/lib/nginx/modules/
